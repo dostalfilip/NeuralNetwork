@@ -9,7 +9,6 @@
 
     <artifactId>playground</artifactId>
     <packaging>jar</packaging>
-
     <name>playground</name>
     <url>http://maven.apache.org</url>
 

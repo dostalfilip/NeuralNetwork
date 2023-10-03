@@ -109,12 +109,7 @@ public class LogicalPerceptor
             System.out.printf("%d%d\t%d\n", (int) x1, (int) x2, (int) output);
         }
         System.out.println("-----------------------------------------");
-
-
-
     }
-
-
 }
 
 
