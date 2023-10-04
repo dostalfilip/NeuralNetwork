@@ -9,6 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MatrixTest {
 
     @Test
+    void testMultiply(){
+        Matrix m1 = new Matrix(2, 3, i-> i);
+        Matrix m2 = new Matrix(3, 2, i-> i);
+
+        System.out.println(m1);
+        System.out.println(m2);
+
+        Matrix result = m1.multiply(m2);
+    }
+
+    @Test
     void testEquals(){
         Matrix m1 = new Matrix(3, 4, i-> 2 * (i-6));
         Matrix m2 = new Matrix(3, 4, i-> 2 * (i-6));
