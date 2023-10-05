@@ -44,22 +44,33 @@ public class Matrix {
         }
     }
 
-    public double get(int index){
+    public double get(int index) {
         return a[index];
     }
 
-    public Matrix multiply(Matrix m){
+    public Matrix multiply(Matrix m) {
         Matrix result = new Matrix(rows, m.cols);
 
-        assert cols == m.rows: "Cannot multiply; wrong number of rows vs cols";
+        if (cols == m.rows) {
+            throw new RuntimeException("Cannot multiply; wrong number of rows vs cols");
+        }
 
+        /* Speed test - for loop order 1000 row/cols multiplication - 20x run sum
+            row col n -> 663ms
+            row n col -> 634ms
+            col n row -> 1240ms
+            col row n -> 729ms
+            n row col -> 690ms
+            n col row -> 1499ms
+         */
         for (int row = 0; row < result.rows; row++) {
-            for (int col = 0; col < result.cols; col++) {
-                for (int n = 0; n < cols; n++) {
+            for (int n = 0; n < cols; n++) {
+                for (int col = 0; col < result.cols; col++) {
                     result.a[row * result.cols + col] += a[row * cols + n] * m.a[col + n * m.cols];
                 }
             }
         }
+
         return result;
     }
 
