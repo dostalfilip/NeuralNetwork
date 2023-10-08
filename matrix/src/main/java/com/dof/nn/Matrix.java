@@ -14,8 +14,20 @@ public class Matrix {
         double produce(int index);
     }
 
-    public interface ValueProducer {
+    public interface IndexValueProducer {
         double produce(int index, double value);
+    }
+
+    public interface ValueProducer {
+        double produce(double value);
+    }
+
+    public interface IndexValueConsumer {
+        void consume(int index, double value);
+    }
+
+    public interface RowColProducer {
+        double produce(int row, int col, double value);
     }
 
     private double[] a;
@@ -26,7 +38,7 @@ public class Matrix {
         a = new double[rows * cols];
     }
 
-    public Matrix apply(ValueProducer producer) {
+    public Matrix apply(IndexValueProducer producer) {
         Matrix result = new Matrix(rows, cols);
 
         for (int i = 0; i < a.length; i++) {
@@ -34,6 +46,28 @@ public class Matrix {
         }
 
         return result;
+    }
+
+    public Matrix modify(ValueProducer producer){
+        for (int i = 0; i < a.length; ++i) {
+            a[i] = producer.produce(a[i]);
+        }
+        return this;
+    }
+
+    public void forEach(IndexValueConsumer consumer) {
+        for (int i = 0; i < a.length; ++i) {
+            consumer.consume(i, a[i]);
+        }
+    }
+
+    public Matrix modify(RowColProducer producer) {
+        for (int row = 0; row < rows; ++row) {
+            for (int col = 0; col < cols; ++col) {
+                a[row * cols + col] = producer.produce(row, col, a[row * cols + col]);
+            }
+        }
+        return this;
     }
 
     public Matrix(int rows, int cols, Producer producer) {
@@ -51,7 +85,7 @@ public class Matrix {
     public Matrix multiply(Matrix m) {
         Matrix result = new Matrix(rows, m.cols);
 
-        if (cols == m.rows) {
+        if (cols != m.rows) {
             throw new RuntimeException("Cannot multiply; wrong number of rows vs cols");
         }
 
