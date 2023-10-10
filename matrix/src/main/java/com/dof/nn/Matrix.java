@@ -26,6 +26,10 @@ public class Matrix {
         void consume(int index, double value);
     }
 
+    public interface RowColValueConsumer {
+        void consume(int row, int col, double value);
+    }
+
     public interface RowColProducer {
         double produce(int row, int col, double value);
     }
@@ -36,6 +40,14 @@ public class Matrix {
         this.rows = rows;
         this.cols = cols;
         a = new double[rows * cols];
+    }
+
+    public  int getRows() {
+        return rows;
+    }
+
+    public  int getCols() {
+        return cols;
     }
 
     public Matrix apply(IndexValueProducer producer) {
@@ -53,6 +65,16 @@ public class Matrix {
             a[i] = producer.produce(a[i]);
         }
         return this;
+    }
+
+    public void forEach(RowColValueConsumer consumer) {
+        int index = 0;
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                consumer.consume(row, col, a[index++]);
+            }
+        }
     }
 
     public void forEach(IndexValueConsumer consumer) {
@@ -76,6 +98,30 @@ public class Matrix {
         for (int i = 0; i < a.length; i++) {
             a[i] = producer.produce(i);
         }
+    }
+
+    public Matrix sumColumns(){
+        Matrix result = new Matrix(1, cols);
+
+        int index = 0;
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                result.a[col] += a[index++];
+            }
+        }
+
+        return result;
+    }
+
+    public Matrix softMax() {
+        Matrix result = new Matrix(rows, cols, i -> Math.exp(a[i]));
+
+        Matrix colSum = result.sumColumns();
+
+        result.modify((row, col, value) -> value / colSum.get(col));
+
+        return result;
     }
 
     public double get(int index) {
@@ -134,6 +180,15 @@ public class Matrix {
         result = 31 * result + cols;
         result = 31 * result + Arrays.hashCode(a);
         return result;
+    }
+
+    public String toString(boolean showValues){
+        if (showValues){
+            return toString();
+        }
+        else {
+            return rows + "x" + cols;
+        }
     }
 
     public String toString() {

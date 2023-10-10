@@ -2,11 +2,45 @@ package com.dof.nn;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
 class MatrixTest {
+private Random random =new Random();
+
+    @Test
+    void testSoftMax() {
+        Matrix m = new Matrix(5, 8, i -> random.nextGaussian());
+
+        Matrix result = m.softMax();
+
+        double[] colSum = new double[8];
+
+        result.forEach((row, col, value) -> {
+            assertTrue(value >= 0 && value <= 1);
+            colSum[col] += value;
+        });
+
+        for (var sum : colSum) {
+            assertTrue(Math.abs(sum - 1.0) < 0.00001);
+        }
+    }
+
+
+    @Test
+    void testSumColumns() {
+        Matrix m = new Matrix(4, 5, i -> i);
+        Matrix result = m.sumColumns();
+
+        double[] expectedValues = {+30.00000,   +34.00000,   +38.00000,   +42.00000,   +46.00000};
+        Matrix expected = new Matrix(1, 5, i -> expectedValues[i]);
+
+        assertTrue(expected.equals(result));
+    }
 
     @Test
     void testMultiply() {
