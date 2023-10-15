@@ -31,7 +31,7 @@ public class Engine {
 
         if (transform == Transform.DENSE) {
             int numberNeurons = (int) params[0];
-            int weightsPerNeuron = weights.size() == 0 ? (int) params[1] : weights.getLast().getRows();
+            int weightsPerNeuron = weights.isEmpty() ? (int) params[1] : weights.getLast().getRows();
 
             Matrix weight = new Matrix(numberNeurons, weightsPerNeuron, i -> random.nextGaussian());
             Matrix bias = new Matrix(numberNeurons, weightsPerNeuron, i -> random.nextGaussian());

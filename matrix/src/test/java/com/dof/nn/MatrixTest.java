@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class MatrixTest {
-private Random random =new Random();
+    private Random random = new Random();
 
     @Test
     void testSoftMax() {
@@ -36,10 +36,10 @@ private Random random =new Random();
         Matrix m = new Matrix(4, 5, i -> i);
         Matrix result = m.sumColumns();
 
-        double[] expectedValues = {+30.00000,   +34.00000,   +38.00000,   +42.00000,   +46.00000};
+        double[] expectedValues = {+30.00000, +34.00000, +38.00000, +42.00000, +46.00000};
         Matrix expected = new Matrix(1, 5, i -> expectedValues[i]);
 
-        assertTrue(expected.equals(result));
+        assertEquals(expected, result);
     }
 
     @Test

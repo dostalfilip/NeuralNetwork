@@ -4,13 +4,33 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NeuralNetworkTest {
-    private  Random random = new Random();
+    private Random random = new Random();
 
     @Test
-    void testEngine(){
+    void testCrossEntropy() {
+        double[] expectedValues = {1, 0, 0, 0, 0, 1, 0, 1, 0};
+        Matrix expected = new Matrix(3, 3, index -> expectedValues[index]);
+
+        Matrix actual = new Matrix(3, 3, index -> index * index * 0.05).softMax();
+
+        Matrix result = LossFunction.crossEntropy(expected, actual);
+
+        actual.forEach((row, col, index, value) -> {
+            double expectedValue = expected.get(index);
+            double loss = result.get(col);
+            if (expectedValue > 0.9) {
+                assertTrue(Math.abs(-Math.log(value) - loss) < 0.001);
+            }
+        });
+
+    }
+
+    //    @Test
+    void testEngine() {
         Engine engine = new Engine();
         engine.add(Transform.DENSE, 8, 5);
         engine.add(Transform.RELU);
@@ -27,18 +47,18 @@ class NeuralNetworkTest {
     }
 
     //@Test
-    void testTemp(){
+    void testTemp() {
 
         int inputSize = 5;
         int layer1Size = 6;
         int layer2Size = 4;
 
-        Matrix input = new Matrix(inputSize, 1, i-> random.nextGaussian());
-        Matrix layer1Weights = new Matrix(layer1Size, input.getRows(), i-> random.nextGaussian());
-        Matrix layer1Biases = new Matrix(layer1Size, 1, i-> random.nextGaussian());
+        Matrix input = new Matrix(inputSize, 1, i -> random.nextGaussian());
+        Matrix layer1Weights = new Matrix(layer1Size, input.getRows(), i -> random.nextGaussian());
+        Matrix layer1Biases = new Matrix(layer1Size, 1, i -> random.nextGaussian());
 
-        Matrix layer2Weights = new Matrix(layer2Size, layer1Weights.getRows(), i-> random.nextGaussian());
-        Matrix layer2Biases = new Matrix(layer2Size, 1, i-> random.nextGaussian());
+        Matrix layer2Weights = new Matrix(layer2Size, layer1Weights.getRows(), i -> random.nextGaussian());
+        Matrix layer2Biases = new Matrix(layer2Size, 1, i -> random.nextGaussian());
 
         var output = input;
         System.out.println(output);
@@ -78,7 +98,7 @@ class NeuralNetworkTest {
 
         Matrix expected = new Matrix(3, 3, index -> (expectedValues[index]));
 
-        assertTrue(result.equals(expected));
+        assertEquals(result, expected);
     }
 
     @Test
@@ -86,22 +106,21 @@ class NeuralNetworkTest {
 
         final int numberNeurons = 5;
         final int numberInputs = 6;
-        final int inputSize =4;
+        final int inputSize = 4;
 
         Matrix input = new Matrix(inputSize, numberInputs, index -> (random.nextDouble()));
         Matrix weights = new Matrix(numberNeurons, inputSize, index -> (random.nextGaussian()));
         Matrix biases = new Matrix(numberNeurons, 1, index -> (random.nextGaussian()));
 
         Matrix result1 = weights.multiply(input).modify((row, col, value) -> value + biases.get(row));
-        Matrix result2 = weights.multiply(input).modify((row, col, value) -> value + biases.get(row)).modify(value -> value > 0 ? value : 0 );
+        Matrix result2 = weights.multiply(input).modify((row, col, value) -> value + biases.get(row)).modify(value -> value > 0 ? value : 0);
 
         result2.forEach((index, value) -> {
             double originalValue = result1.get(index);
-            if(originalValue > 0){
-                assertTrue(Math.abs(originalValue - value) <  0.000001);
-            }
-            else{
-                assertTrue(Math.abs(value) <  0.000001);
+            if (originalValue > 0) {
+                assertTrue(Math.abs(originalValue - value) < 0.000001);
+            } else {
+                assertTrue(Math.abs(value) < 0.000001);
             }
         });
     }
