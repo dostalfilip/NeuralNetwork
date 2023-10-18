@@ -1,4 +1,6 @@
-package com.dof.nn;
+package com.dof.nn.matrix;
+
+import com.dof.nn.matrix.Matrix;
 
 import org.junit.jupiter.api.Test;
 

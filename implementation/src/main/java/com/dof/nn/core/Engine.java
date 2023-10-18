@@ -1,4 +1,6 @@
-package com.dof.nn;
+package com.dof.nn.core;
+
+import com.dof.nn.matrix.Matrix;
 
 import java.util.LinkedList;
 import java.util.Random;

@@ -8,7 +8,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>matrix</artifactId>
+  <artifactId>implementation</artifactId>
   <packaging>jar</packaging>
   <name>matrix</name>
   <url>http://maven.apache.org</url>

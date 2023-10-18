@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>playground</module>
-        <module>matrix</module>
+        <module>implementation</module>
     </modules>
 
     <properties>

@@ -1,4 +1,6 @@
-package com.dof.nn;
+package com.dof.nn.core;
+
+import com.dof.nn.matrix.Matrix;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +11,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NeuralNetworkTest {
     private Random random = new Random();
+
+    @Test
+    void testApproximator(){
+        final int rows = 4;
+        final int cols = 3;
+
+        Matrix input = new Matrix(rows, cols, index -> (random.nextGaussian()));
+
+        Matrix expected = new Matrix(rows, cols, index -> 0);
+
+        for (int col = 0; col < expected.getCols(); col++){
+            int randomRow = random.nextInt(rows);
+
+            expected.set(randomRow, col, 1);
+        }
+
+        Approximator.gradient(input, null);
+
+        System.out.println();
+        System.out.println(input);
+
+        System.out.println(expected);
+
+    }
 
     @Test
     void testCrossEntropy() {
