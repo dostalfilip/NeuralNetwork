@@ -1,7 +1,5 @@
 package com.dof.nn.matrix;
 
-import com.dof.nn.matrix.Matrix;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -13,6 +11,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MatrixTest {
     private Random random = new Random();
+
+    @Test
+    void testAddIncrement() {
+        Matrix m = new Matrix(5, 8, i -> random.nextGaussian());
+
+        int row = 3;
+        int col = 2;
+        double inc = 10;
+
+        Matrix result = m.addIncrement(row, col, inc);
+
+        double incrementValue = result.get(row, col);
+        double originalValue = m.get(row, col);
+
+        assertTrue(Math.abs(incrementValue - originalValue - inc) < 0.00001);
+    }
 
     @Test
     void testSoftMax() {
@@ -31,7 +45,6 @@ class MatrixTest {
             assertTrue(Math.abs(sum - 1.0) < 0.00001);
         }
     }
-
 
     @Test
     void testSumColumns() {

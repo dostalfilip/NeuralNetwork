@@ -15,9 +15,9 @@ class NeuralNetworkTest {
     @Test
     void testApproximator(){
         final int rows = 4;
-        final int cols = 3;
+        final int cols = 5;
 
-        Matrix input = new Matrix(rows, cols, index -> (random.nextGaussian()));
+        Matrix input = new Matrix(rows, cols, index -> (random.nextGaussian())).softMax();
 
         Matrix expected = new Matrix(rows, cols, index -> 0);
 
@@ -27,12 +27,9 @@ class NeuralNetworkTest {
             expected.set(randomRow, col, 1);
         }
 
-        Approximator.gradient(input, null);
+        Matrix result = Approximator.gradient(input, in -> LossFunction.crossEntropy(expected, in));
 
-        System.out.println();
-        System.out.println(input);
-
-        System.out.println(expected);
+        System.out.println(result);
 
     }
 
