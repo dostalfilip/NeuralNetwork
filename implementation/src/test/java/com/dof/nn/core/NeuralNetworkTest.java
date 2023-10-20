@@ -13,7 +13,7 @@ class NeuralNetworkTest {
     private Random random = new Random();
 
     @Test
-    void testApproximator(){
+    void testApproximator() {
         final int rows = 4;
         final int cols = 5;
 
@@ -21,7 +21,7 @@ class NeuralNetworkTest {
 
         Matrix expected = new Matrix(rows, cols, index -> 0);
 
-        for (int col = 0; col < expected.getCols(); col++){
+        for (int col = 0; col < expected.getCols(); col++) {
             int randomRow = random.nextInt(rows);
 
             expected.set(randomRow, col, 1);
@@ -29,7 +29,16 @@ class NeuralNetworkTest {
 
         Matrix result = Approximator.gradient(input, in -> LossFunction.crossEntropy(expected, in));
 
-        System.out.println(result);
+        input.forEach((index, value) -> {
+            double resultValue = result.get(index);
+            double expectedValue = expected.get(index);
+
+            if (expectedValue < 0.001) {
+                assertTrue(Math.abs(resultValue) < 0.01);
+            } else {
+                assertTrue(Math.abs(resultValue + 1.0 / value) < 0.01);
+            }
+        });
 
     }
 
