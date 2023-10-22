@@ -12,6 +12,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NeuralNetworkTest {
     private Random random = new Random();
 
+
+    @Test
+    void testSoftMaxCrossEntropyGradient() {
+        final int rows = 4;
+        final int cols = 5;
+
+        Matrix input = new Matrix(rows, cols, index -> (random.nextGaussian()));
+
+        Matrix expected = new Matrix(rows, cols, index -> 0);
+
+        for (int col = 0; col < expected.getCols(); col++) {
+            int randomRow = random.nextInt(rows);
+
+            expected.set(randomRow, col, 1);
+        }
+
+        Matrix softMaxOutput = input.softMax();
+
+        Matrix result = Approximator.gradient(input, in -> LossFunction.crossEntropy(expected, in.softMax()));
+
+        result.forEach((index, value) -> {
+            double softMaxOutputValue = softMaxOutput.get(index);
+            double expectedValue = expected.get(index);
+
+            assertTrue(Math.abs(value - (softMaxOutputValue - expectedValue)) < 0.01);
+            System.out.println(value + ", " + (softMaxOutputValue - expectedValue));
+        });
+
+    }
+
+
     @Test
     void testApproximator() {
         final int rows = 4;
