@@ -17,7 +17,7 @@ class NeuralNetworkTest {
     }
 
     @Test
-    void testBackPropagationWeights() {
+    void testBackPropagation() {
         final int inputRows = 4;
         final int cols = 5;
         final int outputRows = 4;
@@ -35,7 +35,13 @@ class NeuralNetworkTest {
             expected.set(randomRow, col, 1);
         }
 
-        NeuralNet neuralNet = m -> weights.multiply(m).modify((row, col, value) -> value + biases.get(row)).softMax();
+        NeuralNet neuralNet = m -> {
+            Matrix out = m.apply((index, value) -> value > 0 ? value : 0);
+            out = weights.multiply(out); // weights
+            out.modify((row, col, value) -> value + biases.get(row)); // biases
+            out = out.softMax(); // Softmax activation function
+           return out;
+        };
         Matrix softMaxOutput = neuralNet.apply(input);
 
         Matrix approximatedResult = Approximator.gradient(input, in -> {
@@ -45,6 +51,7 @@ class NeuralNetworkTest {
 
         Matrix calculatedResult = softMaxOutput.apply((index, value) -> value - expected.get(index));
         calculatedResult = weights.transpose().multiply(calculatedResult);
+        calculatedResult = calculatedResult.apply((index, value) ->  input.get(index) > 0 ? value : 0);
 
         assertEquals(approximatedResult, calculatedResult);
     }
