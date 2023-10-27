@@ -17,6 +17,44 @@ class NeuralNetworkTest {
     }
 
     @Test
+    void testEngine() {
+
+        int inputRows = 5;
+        int cols = 6;
+        int outputRows = 4;
+
+        Engine engine = new Engine();
+
+        engine.add(Transform.DENSE, 8, 5);
+//        engine.add(Transform.RELU);
+        engine.add(Transform.DENSE, 5);
+//        engine.add(Transform.RELU);
+        engine.add(Transform.DENSE, 4);
+
+        engine.add(Transform.SOFTMAX);
+        engine.setStoreInputError(true);
+
+        Matrix input = Util.generateInputMatrix(inputRows, cols);
+        Matrix expected = Util.generateExpectedMatrix(outputRows, cols);
+
+        Matrix approximatedError = Approximator.gradient(input, in -> {
+            BatchResult batchResult = engine.runForwards(in);
+            return LossFunctions.crossEntropy(expected, batchResult.getOutput());
+        });
+
+        BatchResult batchResult = engine.runForwards(input);
+        engine.runBackwards(batchResult, expected);
+
+        Matrix calculatedError = batchResult.getInputError();
+        calculatedError.setTolerance(0.0001);
+
+        System.out.println(calculatedError);
+        System.out.println(approximatedError);
+
+        assertEquals(calculatedError, approximatedError);
+    }
+
+    @Test
     void testBackPropagation() {
         final int inputRows = 4;
         final int cols = 5;
@@ -40,18 +78,18 @@ class NeuralNetworkTest {
             out = weights.multiply(out); // weights
             out.modify((row, col, value) -> value + biases.get(row)); // biases
             out = out.softMax(); // Softmax activation function
-           return out;
+            return out;
         };
         Matrix softMaxOutput = neuralNet.apply(input);
 
         Matrix approximatedResult = Approximator.gradient(input, in -> {
             Matrix out = neuralNet.apply(in);
-            return LossFunction.crossEntropy(expected, out);
+            return LossFunctions.crossEntropy(expected, out);
         });
 
         Matrix calculatedResult = softMaxOutput.apply((index, value) -> value - expected.get(index));
         calculatedResult = weights.transpose().multiply(calculatedResult);
-        calculatedResult = calculatedResult.apply((index, value) ->  input.get(index) > 0 ? value : 0);
+        calculatedResult = calculatedResult.apply((index, value) -> input.get(index) > 0 ? value : 0);
 
         assertEquals(approximatedResult, calculatedResult);
     }
@@ -73,7 +111,7 @@ class NeuralNetworkTest {
 
         Matrix softMaxOutput = input.softMax();
 
-        Matrix result = Approximator.gradient(input, in -> LossFunction.crossEntropy(expected, in.softMax()));
+        Matrix result = Approximator.gradient(input, in -> LossFunctions.crossEntropy(expected, in.softMax()));
 
         result.forEach((index, value) -> {
             double softMaxOutputValue = softMaxOutput.get(index);
@@ -100,7 +138,7 @@ class NeuralNetworkTest {
             expected.set(randomRow, col, 1);
         }
 
-        Matrix result = Approximator.gradient(input, in -> LossFunction.crossEntropy(expected, in));
+        Matrix result = Approximator.gradient(input, in -> LossFunctions.crossEntropy(expected, in));
 
         input.forEach((index, value) -> {
             double resultValue = result.get(index);
@@ -122,7 +160,7 @@ class NeuralNetworkTest {
 
         Matrix actual = new Matrix(3, 3, index -> index * index * 0.05).softMax();
 
-        Matrix result = LossFunction.crossEntropy(expected, actual);
+        Matrix result = LossFunctions.crossEntropy(expected, actual);
 
         actual.forEach((row, col, index, value) -> {
             double expectedValue = expected.get(index);
@@ -132,23 +170,6 @@ class NeuralNetworkTest {
             }
         });
 
-    }
-
-    //    @Test
-    void testEngine() {
-        Engine engine = new Engine();
-        engine.add(Transform.DENSE, 8, 5);
-        engine.add(Transform.RELU);
-        engine.add(Transform.DENSE, 5);
-        engine.add(Transform.RELU);
-        engine.add(Transform.DENSE, 4);
-        engine.add(Transform.SOFTMAX);
-
-        Matrix input = new Matrix(5, 6, index -> (random.nextGaussian()));
-        Matrix output = engine.runForwards(input);
-
-        System.out.println(engine);
-        System.out.println(output);
     }
 
     //@Test
