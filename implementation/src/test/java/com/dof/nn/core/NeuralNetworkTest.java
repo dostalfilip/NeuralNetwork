@@ -17,6 +17,33 @@ class NeuralNetworkTest {
     }
 
     @Test
+    void testWeightGradient() {
+        int inputRows = 4;
+        int outputRows = 5;
+
+        Matrix weight = new Matrix(outputRows, inputRows, i -> random.nextGaussian());
+        Matrix input = Util.generateInputMatrix(inputRows, 1);
+        Matrix expected = Util.generateExpectedMatrix(outputRows, 1);
+
+        Matrix output = weight.multiply(input).softMax();
+
+        Matrix calculatedError = output.apply((index, value) -> value - expected.get(index));
+
+        Matrix calculatedWeightGradients = calculatedError.multiply(input.transpose());
+
+        Matrix approximatedWeightGradients = Approximator.weightGradient(
+            weight,
+            w -> {
+                Matrix out = w.multiply(input).softMax();
+                return LossFunctions.crossEntropy(expected, out);
+            });
+
+        calculatedWeightGradients.setTolerance(0.01);
+
+        assertEquals(calculatedWeightGradients, approximatedWeightGradients);
+    }
+
+    @Test
     void testEngine() {
 
         int inputRows = 5;
@@ -26,9 +53,9 @@ class NeuralNetworkTest {
         Engine engine = new Engine();
 
         engine.add(Transform.DENSE, 8, 5);
-//        engine.add(Transform.RELU);
+        engine.add(Transform.RELU);
         engine.add(Transform.DENSE, 5);
-//        engine.add(Transform.RELU);
+        engine.add(Transform.RELU);
         engine.add(Transform.DENSE, 4);
 
         engine.add(Transform.SOFTMAX);
