@@ -40,17 +40,17 @@ public class Matrix {
 
     private double[] a;
 
-    private Matrix(int rows, int cols) {
+    public Matrix(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
         a = new double[rows * cols];
     }
 
-    public  int getRows() {
+    public int getRows() {
         return rows;
     }
 
-    public  int getCols() {
+    public int getCols() {
         return cols;
     }
 
@@ -64,7 +64,13 @@ public class Matrix {
         return result;
     }
 
-    public Matrix modify(ValueProducer producer){
+    public Matrix modify(IndexValueProducer producer) {
+        for (int i = 0; i < a.length; ++i) {
+            a[i] = producer.produce(i, a[i]);
+        }
+        return this;
+    }
+    public Matrix modify(ValueProducer producer) {
         for (int i = 0; i < a.length; ++i) {
             a[i] = producer.produce(a[i]);
         }
@@ -114,7 +120,24 @@ public class Matrix {
         }
     }
 
-    public Matrix sumColumns(){
+    public Matrix getGreatestRowNumber(){
+        Matrix result = new Matrix(1, cols);
+        double[] greatest = new double[cols];
+
+        for(int i = 0; i < cols; i++){
+            greatest[i] = Double.MIN_VALUE;
+        }
+
+        forEach(((row, col, value) -> {
+            if (value > greatest[col]){
+                greatest[col] = value;
+                result.a[col] = row;
+            }
+        }));
+        return result;
+    }
+
+    public Matrix sumColumns() {
         Matrix result = new Matrix(1, cols);
 
         int index = 0;
@@ -128,15 +151,25 @@ public class Matrix {
         return result;
     }
 
-    public Matrix transpose(){
+    public Matrix transpose() {
         Matrix result = new Matrix(cols, rows);
 
-        for (int i = 0; i < a.length; ++i){
-            int row = i /cols;
+        for (int i = 0; i < a.length; ++i) {
+            int row = i / cols;
             int col = i % cols;
 
             result.a[col * rows + row] = a[i];
         }
+
+        return result;
+    }
+
+    public Matrix averageColumn() {
+        Matrix result = new Matrix(rows, 1);
+
+        forEach((row, col, index, value) -> {
+            result.a[row] += value/cols;
+        });
 
         return result;
     }
@@ -151,7 +184,7 @@ public class Matrix {
         return result;
     }
 
-    public void set(int row, int col, double value){
+    public void set(int row, int col, double value) {
         a[row * cols + col] = value;
     }
 
@@ -160,7 +193,7 @@ public class Matrix {
     }
 
     public Matrix addIncrement(int row, int col, double increment) {
-        Matrix result = apply((index, value) ->  a[index]);
+        Matrix result = apply((index, value) -> a[index]);
 
         double originalValue = get(row, col);
 
@@ -233,11 +266,10 @@ public class Matrix {
         return result;
     }
 
-    public String toString(boolean showValues){
-        if (showValues){
+    public String toString(boolean showValues) {
+        if (showValues) {
             return toString();
-        }
-        else {
+        } else {
             return rows + "x" + cols;
         }
     }

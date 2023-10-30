@@ -25,4 +25,19 @@ public class Util {
         }
         return expected;
     }
+
+    public static Matrix generateTrainableExpectedMatrix(int outputRows, Matrix input) {
+        Matrix expected = new Matrix(outputRows, input.getCols());
+
+        Matrix columnSums = input.sumColumns();
+
+        columnSums.forEach(((row, col, index, value) -> {
+            int rowIndex = (int) ( outputRows * (Math.sin(value) + 1.0) / 2.0);
+
+            expected.set(rowIndex, col, 1);
+        }));
+
+            System.out.println(expected);
+        return expected;
+    }
 }

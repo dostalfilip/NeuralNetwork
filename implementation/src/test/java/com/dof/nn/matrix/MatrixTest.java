@@ -13,6 +13,35 @@ class MatrixTest {
     private Random random = new Random();
 
     @Test
+    void testGetGreatestRowNumber() {
+        double[] values = {2,-6,7,7,2,-6,11,-1,1};
+        Matrix m = new Matrix(3,3, i -> values[i]);
+
+        Matrix result = m.getGreatestRowNumber();
+
+        double[] expectedValues = {2,1,0};
+        Matrix matrixExpected = new Matrix(1, 3, i -> expectedValues[i]);
+
+        assertEquals(matrixExpected, result);
+    }
+
+    @Test
+    void testAverageColumn() {
+        int rows = 7;
+        int cols = 5;
+
+        Matrix m = new Matrix(rows, cols, i -> 2 * i - 3);
+        double averageIndex = (cols - 1) / 2.0;
+
+        Matrix expected = new Matrix(rows, 1);
+        expected.modify((row, col, value) -> 2 * (row * cols + averageIndex) - 3);
+
+        Matrix result = m.averageColumn();
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     void testTranspose() {
         Matrix m = new Matrix(2, 3, i -> i);
         Matrix result = m.transpose();

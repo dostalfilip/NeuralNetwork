@@ -12,6 +12,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NeuralNetworkTest {
     private Random random = new Random();
 
+    @Test
+    void testTrainEngine() {
+        int inputRows = 5;
+        int cols = 6;
+        int outputRows = 7;
+
+        Matrix input = Util.generateInputMatrix(inputRows, cols);
+        Matrix expected = Util.generateTrainableExpectedMatrix(outputRows, input);
+
+
+
+        Engine engine = new Engine();
+        engine.add(Transform.DENSE, 6, inputRows);
+        engine.add(Transform.RELU);
+        engine.add(Transform.DENSE, outputRows);
+        engine.add(Transform.SOFTMAX);
+
+        BatchResult batchResult = engine.runForwards(input);
+        engine.evaluate(batchResult, expected);
+
+        double loss1 = batchResult.getLoss();
+
+        engine.runBackwards(batchResult, expected);
+        engine.adjust(batchResult, 0.01);
+        batchResult = engine.runForwards(input);
+        engine.evaluate(batchResult, expected);
+
+        double loss2 = batchResult.getLoss();
+
+        System.out.println(loss1 + " " + loss2);
+    }
+
     interface NeuralNet {
         Matrix apply(Matrix m);
     }
@@ -222,7 +254,7 @@ class NeuralNetworkTest {
         output = output.modify((row, col, value) -> value + layer1Biases.get(row));
         System.out.println(output);
 
-        output = output.modify(value -> value > 0 ? value : 0);
+        output = output.modify((value) -> value > 0 ? value : 0);
         System.out.println(output);
 
         // layer 2
