@@ -120,7 +120,7 @@ public class Matrix {
         }
     }
 
-    public Matrix getGreatestRowNumber(){
+    public Matrix getGreatestRowNumbers(){
         Matrix result = new Matrix(1, cols);
         double[] greatest = new double[cols];
 
@@ -188,6 +188,10 @@ public class Matrix {
         a[row * cols + col] = value;
     }
 
+    public double get(int index) {
+        return a[index];
+    }
+
     public double get(int row, int col) {
         return a[row * cols + col];
     }
@@ -202,10 +206,6 @@ public class Matrix {
         result.set(row, col, newValue);
 
         return result;
-    }
-
-    public double get(int index) {
-        return a[index];
     }
 
     public Matrix multiply(Matrix m) {

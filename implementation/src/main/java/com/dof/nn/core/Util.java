@@ -9,6 +9,34 @@ public class Util {
     private Util() {
     }
 
+    public static TrainingMatrices generateTrainingMatrices(int inputRows, int outputRows, int cols) {
+        Matrix input = new Matrix(inputRows, cols);
+        Matrix output = new Matrix(outputRows, cols);
+
+        for (int col = 0; col < cols; col++) {
+            int radius = random.nextInt(outputRows);
+
+            double[] values = new double[inputRows];
+
+            double initialRadius = 0;
+            for (int row = 0; row < inputRows; row++) {
+                double value = random.nextGaussian();
+                values[row] = value;
+                initialRadius += value * value;
+            }
+
+            initialRadius = Math.sqrt(initialRadius);
+
+            for (int row = 0; row < inputRows; row++) {
+                input.set(row, col, values[row] / initialRadius);
+            }
+
+            output.set(radius, col, 1);
+        }
+
+        return new TrainingMatrices(input, output);
+    }
+
     private static Random random = new Random();
 
     public static Matrix generateInputMatrix(int rows, int cols) {
@@ -32,12 +60,11 @@ public class Util {
         Matrix columnSums = input.sumColumns();
 
         columnSums.forEach(((row, col, index, value) -> {
-            int rowIndex = (int) ( outputRows * (Math.sin(value) + 1.0) / 2.0);
+            int rowIndex = (int) (outputRows * (Math.sin(value) + 1.0) / 2.0);
 
             expected.set(rowIndex, col, 1);
         }));
 
-            System.out.println(expected);
         return expected;
     }
 }

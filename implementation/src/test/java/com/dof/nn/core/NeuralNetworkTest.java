@@ -14,14 +14,9 @@ class NeuralNetworkTest {
 
     @Test
     void testTrainEngine() {
-        int inputRows = 5;
-        int cols = 6;
-        int outputRows = 7;
-
-        Matrix input = Util.generateInputMatrix(inputRows, cols);
-        Matrix expected = Util.generateTrainableExpectedMatrix(outputRows, input);
-
-
+        int inputRows = 500;
+        int cols = 32;
+        int outputRows = 3;
 
         Engine engine = new Engine();
         engine.add(Transform.DENSE, 6, inputRows);
@@ -29,19 +24,21 @@ class NeuralNetworkTest {
         engine.add(Transform.DENSE, outputRows);
         engine.add(Transform.SOFTMAX);
 
-        BatchResult batchResult = engine.runForwards(input);
-        engine.evaluate(batchResult, expected);
+        for (int i = 0; i < 2000; i++) {
+            var tm = Util.generateTrainingMatrices(inputRows, outputRows, cols);
+            var input = tm.getInput();
+            var expected = tm.getOutput();
 
-        double loss1 = batchResult.getLoss();
+            BatchResult batchResult = engine.runForwards(input);
+            engine.runBackwards(batchResult, expected);
+            engine.adjust(batchResult, 0.01);
+            engine.evaluate(batchResult, expected);
 
-        engine.runBackwards(batchResult, expected);
-        engine.adjust(batchResult, 0.01);
-        batchResult = engine.runForwards(input);
-        engine.evaluate(batchResult, expected);
+            double loss = batchResult.getLoss();
+            double percentCorrect = batchResult.getPercentCorrect();
 
-        double loss2 = batchResult.getLoss();
-
-        System.out.println(loss1 + " " + loss2);
+            System.out.printf("Loss: %.3f, %% correct:  %.2f\n", loss, percentCorrect);
+        }
     }
 
     interface NeuralNet {
