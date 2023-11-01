@@ -8,7 +8,7 @@ public class BatchResult {
     private LinkedList<Matrix> io = new LinkedList<>();
     private LinkedList<Matrix> weightErrors = new LinkedList<>();
     private LinkedList<Matrix> weightInputs = new LinkedList<>();
-    private  Matrix inputError;
+    private Matrix inputError;
     private double loss;
     private double percentCorrect;
 
@@ -20,15 +20,15 @@ public class BatchResult {
         return weightInputs;
     }
 
-    public  LinkedList<Matrix> getIo(){
+    public LinkedList<Matrix> getIo() {
         return io;
     }
 
-    public Matrix getOutput(){
+    public Matrix getOutput() {
         return io.getLast();
     }
 
-    public void addIo(Matrix m){
+    public void addIo(Matrix m) {
         io.add(m);
     }
 
@@ -48,19 +48,19 @@ public class BatchResult {
         this.inputError = inputError;
     }
 
-    public void setLoss(double loss) {
-        this.loss = loss;
-    }
-
     public double getLoss() {
         return loss;
     }
 
-    public void setPercentCorrect(double percentCorrect) {
-        this.percentCorrect = percentCorrect;
+    public void setLoss(double loss) {
+        this.loss = loss;
     }
 
     public double getPercentCorrect() {
         return percentCorrect;
+    }
+
+    public void setPercentCorrect(double percentCorrect) {
+        this.percentCorrect = percentCorrect;
     }
 }

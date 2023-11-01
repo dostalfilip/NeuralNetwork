@@ -19,25 +19,33 @@ class NeuralNetworkTest {
         int outputRows = 3;
 
         Engine engine = new Engine();
-        engine.add(Transform.DENSE, 6, inputRows);
+        engine.add(Transform.DENSE, 100, inputRows);
         engine.add(Transform.RELU);
         engine.add(Transform.DENSE, outputRows);
         engine.add(Transform.SOFTMAX);
 
-        for (int i = 0; i < 2000; i++) {
-            var tm = Util.generateTrainingMatrices(inputRows, outputRows, cols);
+        RunningAverages runningAverages = new RunningAverages(2, 500, (callNumber, averages) -> {
+            assertTrue(averages[0] < 6);
+//            System.out.printf("%d. Loss: %.3f -- Percent correct: %.2f\n", callNumber, averages[0], averages[1]);
+        });
+
+        double initialLearningRate = 0.02;
+        double learningRate = initialLearningRate;
+        double iterations = 500;
+
+        for (int i = 0; i < iterations; i++) {
+            var tm = Util.generateTrainingMatrixes(inputRows, outputRows, cols);
             var input = tm.getInput();
             var expected = tm.getOutput();
 
             BatchResult batchResult = engine.runForwards(input);
             engine.runBackwards(batchResult, expected);
-            engine.adjust(batchResult, 0.01);
+            engine.adjust(batchResult, learningRate);
             engine.evaluate(batchResult, expected);
 
-            double loss = batchResult.getLoss();
-            double percentCorrect = batchResult.getPercentCorrect();
+            runningAverages.add(batchResult.getLoss(), batchResult.getPercentCorrect());
 
-            System.out.printf("Loss: %.3f, %% correct:  %.2f\n", loss, percentCorrect);
+            learningRate -= (initialLearningRate / iterations);
         }
     }
 
@@ -54,7 +62,7 @@ class NeuralNetworkTest {
         Matrix input = Util.generateInputMatrix(inputRows, 1);
         Matrix expected = Util.generateExpectedMatrix(outputRows, 1);
 
-        Matrix output = weight.multiply(input).softMax();
+        Matrix output = weight.multiply(input).softmax();
 
         Matrix calculatedError = output.apply((index, value) -> value - expected.get(index));
 
@@ -63,7 +71,7 @@ class NeuralNetworkTest {
         Matrix approximatedWeightGradients = Approximator.weightGradient(
             weight,
             w -> {
-                Matrix out = w.multiply(input).softMax();
+                Matrix out = w.multiply(input).softmax();
                 return LossFunctions.crossEntropy(expected, out);
             });
 
@@ -133,7 +141,7 @@ class NeuralNetworkTest {
             Matrix out = m.apply((index, value) -> value > 0 ? value : 0);
             out = weights.multiply(out); // weights
             out.modify((row, col, value) -> value + biases.get(row)); // biases
-            out = out.softMax(); // Softmax activation function
+            out = out.softmax(); // Softmax activation function
             return out;
         };
         Matrix softMaxOutput = neuralNet.apply(input);
@@ -165,9 +173,9 @@ class NeuralNetworkTest {
             expected.set(randomRow, col, 1);
         }
 
-        Matrix softMaxOutput = input.softMax();
+        Matrix softMaxOutput = input.softmax();
 
-        Matrix result = Approximator.gradient(input, in -> LossFunctions.crossEntropy(expected, in.softMax()));
+        Matrix result = Approximator.gradient(input, in -> LossFunctions.crossEntropy(expected, in.softmax()));
 
         result.forEach((index, value) -> {
             double softMaxOutputValue = softMaxOutput.get(index);
@@ -184,7 +192,7 @@ class NeuralNetworkTest {
         final int rows = 4;
         final int cols = 5;
 
-        Matrix input = new Matrix(rows, cols, index -> (random.nextGaussian())).softMax();
+        Matrix input = new Matrix(rows, cols, index -> (random.nextGaussian())).softmax();
 
         Matrix expected = new Matrix(rows, cols, index -> 0);
 
@@ -214,7 +222,7 @@ class NeuralNetworkTest {
         double[] expectedValues = {1, 0, 0, 0, 0, 1, 0, 1, 0};
         Matrix expected = new Matrix(3, 3, index -> expectedValues[index]);
 
-        Matrix actual = new Matrix(3, 3, index -> index * index * 0.05).softMax();
+        Matrix actual = new Matrix(3, 3, index -> index * index * 0.05).softmax();
 
         Matrix result = LossFunctions.crossEntropy(expected, actual);
 
@@ -262,7 +270,7 @@ class NeuralNetworkTest {
         output = output.modify((row, col, value) -> value + layer2Biases.get(row));
         System.out.println(output);
 
-        output = output.softMax();
+        output = output.softmax();
         System.out.println(output);
 
     }

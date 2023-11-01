@@ -11,11 +11,22 @@ public class Engine {
     private LinkedList<Matrix> biases = new LinkedList<>();
 
     private LossFunction lossFunction = LossFunction.CROSSENTROPY;
+    private double scaleInitialWeights = 1;
+
     private boolean storeInputError = false;
 
+    public void setScaleInitialWeights(double scale) {
+        scaleInitialWeights = scale;
+
+        if (weights.size() != 0) {
+            throw new RuntimeException("Must call setScaleInitialWeights BEFORE adding transforms!");
+        }
+    }
+
     public void evaluate(BatchResult batchResult, Matrix expected) {
-        if(lossFunction != LossFunction.CROSSENTROPY){
-            throw new UnsupportedOperationException("Only cross entropy is supported");
+
+        if (lossFunction != LossFunction.CROSSENTROPY) {
+            throw new UnsupportedOperationException("Only cross entropy loss is supported");
         }
 
         double loss = LossFunctions.crossEntropy(expected, batchResult.getOutput()).averageColumn().get(0);
@@ -25,13 +36,13 @@ public class Engine {
 
         int correct = 0;
 
-        for(int i = 0; i < predictions.getCols(); i++) {
-            if(actual.get(i) == predictions.get(i)) {
+        for (int i = 0; i < actual.getCols(); i++) {
+            if ((int) actual.get(i) == (int) predictions.get(i)) {
                 ++correct;
             }
         }
 
-        double percentCorrect = 100.0 * correct / actual.getCols();
+        double percentCorrect = (100.0 * correct) / actual.getCols();
 
         batchResult.setLoss(loss);
         batchResult.setPercentCorrect(percentCorrect);
@@ -41,6 +52,7 @@ public class Engine {
 
         BatchResult batchResult = new BatchResult();
         Matrix output = input;
+
         int denseIndex = 0;
 
         batchResult.addIo(output);
@@ -58,11 +70,12 @@ public class Engine {
             } else if (t == Transform.RELU) {
                 output = output.modify(value -> value > 0 ? value : 0);
             } else if (t == Transform.SOFTMAX) {
-                output = output.softMax();
+                output = output.softmax();
             }
 
             batchResult.addIo(output);
         }
+
         return batchResult;
     }
 
@@ -73,7 +86,7 @@ public class Engine {
         assert weightInputs.size() == weightErrors.size();
         assert weightInputs.size() == weights.size();
 
-        for(int i = 0; i < weights.size(); i++) {
+        for (int i = 0; i < weights.size(); i++) {
             var weight = weights.get(i);
             var bias = biases.get(i);
             var error = weightErrors.get(i);
@@ -84,11 +97,12 @@ public class Engine {
             var weightAdjust = error.multiply(input.transpose());
             var biasAdjust = error.averageColumn();
 
-            double rate = learningRate/input.getCols();
+            double rate = learningRate / input.getCols();
 
-            weight.modify((index, value)->value - rate * weightAdjust.get(index));
-            bias.modify((row, col, value)->value - learningRate * biasAdjust.get(row));
+            weight.modify((index, value) -> value - rate * weightAdjust.get(index));
+            bias.modify((row, col, value) -> value - learningRate * biasAdjust.get(row));
         }
+
     }
 
     public void runBackwards(BatchResult batchResult, Matrix expected) {
@@ -100,9 +114,9 @@ public class Engine {
         }
 
         var ioIt = batchResult.getIo().descendingIterator();
-        var weightsIt = weights.descendingIterator();
-        Matrix softMaxOutput = ioIt.next();
-        Matrix error = softMaxOutput.apply((index, value) -> value - expected.get(index));
+        var weightIt = weights.descendingIterator();
+        Matrix softmaxOutput = ioIt.next();
+        Matrix error = softmaxOutput.apply((index, value) -> value - expected.get(index));
 
         while (transformsIt.hasNext()) {
             Transform transform = transformsIt.next();
@@ -111,11 +125,11 @@ public class Engine {
 
             switch (transform) {
                 case DENSE -> {
-                    Matrix weight = weightsIt.next();
+                    Matrix weight = weightIt.next();
 
                     batchResult.addWeightsError(error);
 
-                    if (weightsIt.hasNext() || storeInputError) {
+                    if (weightIt.hasNext() || storeInputError) {
                         error = weight.transpose().multiply(error);
                     }
                 }
@@ -127,7 +141,7 @@ public class Engine {
                 default -> throw new UnsupportedOperationException("Not implemented");
             }
 
-//            System.out.println(transform);
+            //System.out.println(transform);
         }
 
         if (storeInputError) {
@@ -140,10 +154,10 @@ public class Engine {
 
         if (transform == Transform.DENSE) {
             int numberNeurons = (int) params[0];
-            int weightsPerNeuron = weights.isEmpty() ? (int) params[1] : weights.getLast().getRows();
+            int weightsPerNeuron = weights.size() == 0 ? (int) params[1] : weights.getLast().getRows();
 
-            Matrix weight = new Matrix(numberNeurons, weightsPerNeuron, i -> random.nextGaussian());
-            Matrix bias = new Matrix(numberNeurons, weightsPerNeuron, i -> 0);
+            Matrix weight = new Matrix(numberNeurons, weightsPerNeuron, i -> scaleInitialWeights * random.nextGaussian());
+            Matrix bias = new Matrix(numberNeurons, 1, i -> 0);
 
             weights.add(weight);
             biases.add(bias);
@@ -151,26 +165,33 @@ public class Engine {
         transforms.add(transform);
     }
 
-    public boolean isStoreInputError() {
-        return storeInputError;
-    }
 
     public void setStoreInputError(boolean storeInputError) {
         this.storeInputError = storeInputError;
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
+        sb.append(String.format("Scale initial weights: %.3f\n", scaleInitialWeights));
+
+        sb.append("\nTransforms:\n");
+
         int weightIndex = 0;
         for (var t : transforms) {
+
             sb.append(t);
+
             if (t == Transform.DENSE) {
                 sb.append(" ").append(weights.get(weightIndex).toString(false));
+
                 weightIndex++;
             }
+
             sb.append("\n");
         }
+
         return sb.toString();
     }
 }

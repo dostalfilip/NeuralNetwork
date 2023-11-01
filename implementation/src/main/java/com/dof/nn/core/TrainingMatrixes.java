@@ -2,11 +2,11 @@ package com.dof.nn.core;
 
 import com.dof.nn.matrix.Matrix;
 
-public class TrainingMatrices {
+public class TrainingMatrixes {
     private Matrix input;
     private Matrix output;
 
-    public TrainingMatrices(Matrix input, Matrix output) {
+    public TrainingMatrixes(Matrix input, Matrix output) {
         this.input = input;
         this.output = output;
     }
@@ -15,7 +15,17 @@ public class TrainingMatrices {
         return input;
     }
 
+    public void setInput(Matrix input) {
+        this.input = input;
+    }
+
     public Matrix getOutput() {
         return output;
     }
+
+    public void setOutput(Matrix output) {
+        this.output = output;
+    }
+
+
 }

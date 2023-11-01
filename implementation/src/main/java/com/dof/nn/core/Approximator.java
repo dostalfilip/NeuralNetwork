@@ -13,7 +13,7 @@ public class Approximator {
         Matrix loss1 = transform.apply(input);
 
         assert loss1.getCols() == input.getCols() : "Input/loss columns not equal";
-        assert loss1.getRows() == 1 : "Transform does not return one single row.";
+        assert loss1.getRows() == 1 : "Transform does not return one single row";
 
         Matrix result = new Matrix(input.getRows(), input.getCols(), i -> 0);
 

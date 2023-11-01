@@ -72,7 +72,7 @@ class MatrixTest {
     void testSoftMax() {
         Matrix m = new Matrix(5, 8, i -> random.nextGaussian());
 
-        Matrix result = m.softMax();
+        Matrix result = m.softmax();
 
         double[] colSum = new double[8];
 
