@@ -6,28 +6,32 @@ import com.dof.nn.loader.Loader;
 import com.dof.nn.loader.MetaData;
 
 public class TestLoader implements Loader {
-    private MetaData metaData;
+    private final MetaData metaData;
 
-    private int numberItems = 60_000;
-    private int inputSize = 500;
-    private int expectedSize = 3;
+    private final int inputSize = 500;
+    private final int expectedSize = 3;
+    private final int numberItems;
     private int numberBatches;
-    private int batchSize = 32;
+    private final int batchSize;
 
     private int totalItemsRead;
     private int itemsRead;
 
-    public TestLoader(MetaData metaData) {
-        this.metaData = metaData;
+    public TestLoader(int numberItems, int batchSize) {
+        this.numberItems = numberItems;
+        this.batchSize = batchSize;
+
+        this.metaData = new TestMetaData();
         metaData.setNumberItems(numberItems);
         numberBatches = numberItems / batchSize;
-        if (numberBatches % batchSize != 0) {
+
+        if (numberItems % batchSize != 0) {
             numberBatches += 1;
         }
+
         metaData.setNumberBatches(numberBatches);
         metaData.setInputSize(inputSize);
         metaData.setExpectedSize(expectedSize);
-
     }
 
     @Override
@@ -56,6 +60,7 @@ public class TestLoader implements Loader {
         int excessItems = totalItemsRead - numberItems;
         if (excessItems > 0) {
             totalItemsRead -= excessItems;
+            itemsRead -= excessItems;
         }
 
         var io = Util.generateTrainingArrays(inputSize, expectedSize, itemsRead);
