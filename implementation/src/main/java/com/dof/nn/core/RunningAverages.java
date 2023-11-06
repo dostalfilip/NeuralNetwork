@@ -9,12 +9,14 @@ public class RunningAverages {
     private Callback callback;
     private int pos = 0;
 
-    public RunningAverages(int numberOfValues, int windowSize, Callback callback) {
+    public RunningAverages(int numberAverages, int windowSize, Callback callback) {
         this.callback = callback;
-        values = new double[numberOfValues][windowSize];
 
-        System.out.println(values.length);
-        System.out.println(values[0].length);
+        values = new double[numberAverages][windowSize];
+    }
+
+    public interface Callback {
+        public void apply(int callNumber, double[] averages);
     }
 
     public void add(double... args) {
@@ -32,10 +34,5 @@ public class RunningAverages {
 
             pos = 0;
         }
-    }
-
-
-    public interface Callback {
-        void apply(int callNumber, double[] averages);
     }
 }

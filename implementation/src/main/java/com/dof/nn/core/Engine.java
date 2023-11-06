@@ -2,10 +2,12 @@ package com.dof.nn.core;
 
 import com.dof.nn.matrix.Matrix;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class Engine {
+public class Engine implements Serializable {
+    private static final long serialVersionUID = 1L;
     private LinkedList<Transform> transforms = new LinkedList<>();
     private LinkedList<Matrix> weights = new LinkedList<>();
     private LinkedList<Matrix> biases = new LinkedList<>();
@@ -127,7 +129,7 @@ public class Engine {
                 case DENSE -> {
                     Matrix weight = weightIt.next();
 
-                    batchResult.addWeightsError(error);
+                    batchResult.addWeightError(error);
 
                     if (weightIt.hasNext() || storeInputError) {
                         error = weight.transpose().multiply(error);

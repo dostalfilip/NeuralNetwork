@@ -41,6 +41,7 @@ public class TestLoader implements Loader {
 
     @Override
     public void close() {
+        totalItemsRead = 0;
     }
 
     @Override
@@ -49,7 +50,7 @@ public class TestLoader implements Loader {
     }
 
     @Override
-    public BatchData readBatch() {
+    public synchronized BatchData readBatch() {
         if (totalItemsRead == numberItems) {
             return null;
         }

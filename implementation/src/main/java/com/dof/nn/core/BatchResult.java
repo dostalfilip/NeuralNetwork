@@ -36,7 +36,7 @@ public class BatchResult {
         return weightErrors;
     }
 
-    public void addWeightsError(Matrix weightsError) {
+    public void addWeightError(Matrix weightsError) {
         weightErrors.addFirst(weightsError);
     }
 
