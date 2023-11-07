@@ -218,6 +218,9 @@ public class NeuralNetwork implements Serializable {
         return true;
     }
 
+    /**
+     * Magical code - that initialize Object after it load/deserialize class from file
+     */
     public Object readResolve() {
         this.lock = new Object();
         return this;

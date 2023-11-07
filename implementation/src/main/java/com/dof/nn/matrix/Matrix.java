@@ -1,9 +1,11 @@
 package com.dof.nn.matrix;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class Matrix {
+public class Matrix implements Serializable {
+    static final long serialVersionUID = 42L;
 
     private static final String NUMBER_FORMAT = "%+12.5f";
     private double tolerance = 0.000001;
