@@ -6,3 +6,7 @@ Aim of Project
 - Understand how to use neural networks for handwritten digit recognition
 - Implement the backpropagation algorithm
 - Use neural networks for categorisation
+
+## Download MNIST Dataset
+
+https://www.kaggle.com/datasets/hojjatk/mnist-dataset/
