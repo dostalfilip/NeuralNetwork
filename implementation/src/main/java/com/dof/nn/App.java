@@ -1,51 +1,36 @@
 package com.dof.nn;
 
-import com.dof.nn.core.NeuralNetwork;
-import com.dof.nn.core.Transform;
 import com.dof.nn.loader.Loader;
-import com.dof.nn.loader.test.TestLoader;
+import com.dof.nn.loader.image.ImageLoader;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 public class App {
 
-    public static void main(String[] args) {
-        String filename = "neural1.net";
-
-        System.out.println("Count of available processors: " + Runtime.getRuntime().availableProcessors());
-
-        NeuralNetwork neuralNetwork = NeuralNetwork.load(filename);
-
-        if (neuralNetwork == null) {
-            System.out.println("Unable to load neural network from saved. Creating from scratch.");
-            int inputRows = 10;
-            int outputRows = 3;
-
-            neuralNetwork = new NeuralNetwork();
-            neuralNetwork.add(Transform.DENSE, 100, inputRows);
-            neuralNetwork.add(Transform.RELU);
-            neuralNetwork.add(Transform.DENSE, 50, inputRows);
-            neuralNetwork.add(Transform.RELU);
-            neuralNetwork.add(Transform.DENSE, outputRows);
-            neuralNetwork.add(Transform.SOFTMAX);
-
-            neuralNetwork.setThreads(20);
-            neuralNetwork.setEpochs(50);
-            neuralNetwork.setLearningRates(0.02, 0.001);
-
-        } else {
-            System.out.println("Loading neural network from " + filename);
+    public static void main(String[] args) throws IOException {
+        if (args.length == 0 || !new File(args[0]).isDirectory()) {
+            System.out.println("usage: [app] <MNIST DATA DIRECTORY>");
+            return;
         }
+        System.out.println(new File(args[0]).getCanonicalPath());
+        System.out.println("Hello");
 
-        System.out.println(neuralNetwork);
-        Loader trainLoader = new TestLoader(60_000, 32);
-        Loader testLoader = new TestLoader(10_000, 32);
+        String directory = args[0];
 
-        neuralNetwork.fit(trainLoader, testLoader);
+        final Path trainImages = Path.of(directory, "train-images.idx3-ubyte");
+        final Path trainLabels = Path.of(directory, "train-labels.idx1-ubyte");
+        final Path testImages = Path.of(directory, "t10k-images.idx3-ubyte");
+        final Path testLabels = Path.of(directory, "t10k-labels.idx1-ubyte");
 
-        if (neuralNetwork.save("neural1.net")) {
-            System.out.println("Saved to " + filename);
-        } else {
-            System.out.println("Unable to save to " + filename);
-        }
+        Loader trainLoader = new ImageLoader(trainImages, trainLabels, 32);
+        Loader testLoader = new ImageLoader(testImages, testLabels, 32);
 
+        trainLoader.open();
+        testLoader.open();
+
+        trainLoader.close();
+        testLoader.close();
     }
 }
