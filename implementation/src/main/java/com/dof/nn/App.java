@@ -14,8 +14,8 @@ public class App {
             System.out.println("usage: [app] <MNIST DATA DIRECTORY>");
             return;
         }
+        System.out.print("Path to file: ");
         System.out.println(new File(args[0]).getCanonicalPath());
-        System.out.println("Hello");
 
         String directory = args[0];
 
