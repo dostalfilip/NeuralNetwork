@@ -17,6 +17,7 @@ public class ImageLoader implements Loader {
 
     private DataInputStream dsImages;
     private DataInputStream dsLabels;
+
     private ImageMetaData metaData;
 
     private Lock readLock = new ReentrantLock();
@@ -29,6 +30,7 @@ public class ImageLoader implements Loader {
 
     @Override
     public ImageMetaData open() {
+
         try {
             dsImages = new DataInputStream(new FileInputStream(imageFileName.toFile()));
         } catch (Exception e) {
@@ -40,6 +42,7 @@ public class ImageLoader implements Loader {
         } catch (Exception e) {
             throw new LoaderException("Cannot open " + labelFileName, e);
         }
+
         metaData = readMetaData();
         return metaData;
     }
@@ -52,25 +55,29 @@ public class ImageLoader implements Loader {
 
         try {
             int magicLabelNumber = dsLabels.readInt();
+
             if (magicLabelNumber != 2049) {
-                throw new LoaderException("Label file: " + labelFileName + " has wrong format.");
+                throw new LoaderException("Label file " + labelFileName + " has wrong format.");
             }
+
             numberItems = dsLabels.readInt();
 
             metaData.setNumberItems(numberItems);
 
         } catch (IOException e) {
-            throw new LoaderException("Cannot to read " + labelFileName, e);
+            throw new LoaderException("Unable to read " + labelFileName, e);
         }
 
         try {
             int magicImageNumber = dsImages.readInt();
+
             if (magicImageNumber != 2051) {
-                throw new LoaderException("Image file: " + imageFileName + " has wrong format.");
+                throw new LoaderException("Image file " + imageFileName + " has wrong format.");
             }
 
             if (dsImages.readInt() != numberItems) {
-                throw new LoaderException("Image file: " + imageFileName + " has different number of items to " + labelFileName);
+                throw new LoaderException(
+                    "Image file " + imageFileName + " has different number of items to " + labelFileName);
             }
 
             int height = dsImages.readInt();
@@ -81,29 +88,32 @@ public class ImageLoader implements Loader {
 
             metaData.setInputSize(width * height);
         } catch (IOException e) {
-            throw new LoaderException("Cannot to read " + imageFileName, e);
+            throw new LoaderException("Unable to read " + imageFileName, e);
         }
 
         metaData.setExpectedSize(10);
-        metaData.setNumberBatches((int) (Math.ceil((double) numberItems) / batchSize));
+        metaData.setNumberBatches((int) Math.ceil((double) numberItems) / batchSize);
 
         return metaData;
     }
 
     @Override
     public void close() {
+
         metaData = null;
 
         try {
             dsImages.close();
         } catch (Exception e) {
-            throw new LoaderException("Cannot close" + imageFileName, e);
+            throw new LoaderException("Cannot close " + imageFileName, e);
         }
+
         try {
             dsLabels.close();
         } catch (Exception e) {
-            throw new LoaderException("Cannot close" + labelFileName, e);
+            throw new LoaderException("Cannot close " + labelFileName, e);
         }
+
     }
 
     @Override
@@ -112,7 +122,7 @@ public class ImageLoader implements Loader {
     }
 
     @Override
-    public synchronized BatchData readBatch() {
+    public BatchData readBatch() {
         readLock.lock();
 
         try {
@@ -125,6 +135,8 @@ public class ImageLoader implements Loader {
                 throw new LoaderException("Mismatch between images read and labels read.");
             }
 
+            metaData.setItemsRead(inputItemsRead);
+
             return batchData;
         } finally {
             readLock.unlock();
@@ -132,30 +144,60 @@ public class ImageLoader implements Loader {
     }
 
     private int readExpectedBatch(ImageBatchData batchData) {
-        return 0;
+        try {
+            var totalItemsRead = metaData.getTotalItemsRead();
+            var numberItems = metaData.getNumberItems();
+
+            var numberToRead = Math.min(numberItems - totalItemsRead, batchSize);
+
+            var labelData = new byte[numberToRead];
+            var expectedSize = metaData.getExpectedSize();
+
+            var numberRead = dsLabels.read(labelData, 0, numberToRead);
+
+            if (numberRead != numberToRead) {
+                throw new LoaderException("Couldn't read sufficient bytes from image data");
+            }
+
+            double[] data = new double[numberToRead * expectedSize];
+
+            for (int i = 0; i < numberToRead; i++) {
+                byte label = labelData[i];
+
+                data[i * expectedSize + label] = 1;
+            }
+
+            batchData.setExpectedBatch(data);
+
+            return numberToRead;
+        } catch (IOException e) {
+            throw new LoaderException("Error occurred reading image data.", e);
+        }
     }
 
     private int readInputBatch(ImageBatchData batchData) {
-        var totalItemsRead = metaData.getTotalItemsRead();
-        var numberItems = metaData.getNumberItems();
-
-        var numberToRead = Math.min(numberItems - totalItemsRead, batchSize);
-        var inputSize = metaData.getInputSize();
-        var numberBytesToRead = numberToRead * inputSize;
-
-        byte[] imageData = new byte[numberBytesToRead];
 
         try {
+            var totalItemsRead = metaData.getTotalItemsRead();
+            var numberItems = metaData.getNumberItems();
+
+            var numberToRead = Math.min(numberItems - totalItemsRead, batchSize);
+
+            var inputSize = metaData.getInputSize();
+            var numberBytesToRead = numberToRead * inputSize;
+
+            byte[] imageData = new byte[numberBytesToRead];
+
             var numberRead = dsImages.read(imageData, 0, numberBytesToRead);
+
             if (numberRead != numberBytesToRead) {
-                throw new LoaderException("Couldn't read sufficient bytes from image data..");
+                throw new LoaderException("Couldn't read sufficient bytes from image data");
             }
 
             double[] data = new double[numberBytesToRead];
-            for (int i = 0; i < numberBytesToRead; i++) {
-                data[i] = (imageData[i] & 0xFF) / 255.0;
 
-                System.out.println(data[i]);
+            for (int i = 0; i < numberBytesToRead; i++) {
+                data[i] = (imageData[i] & 0xFF) / 256.0;
             }
 
             batchData.setInputBatch(data);
@@ -165,4 +207,5 @@ public class ImageLoader implements Loader {
             throw new LoaderException("Error occurred reading image data.", e);
         }
     }
+
 }
