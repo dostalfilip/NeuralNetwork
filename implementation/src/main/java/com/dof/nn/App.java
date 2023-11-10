@@ -1,6 +1,8 @@
 package com.dof.nn;
 
+import com.dof.nn.loader.BatchData;
 import com.dof.nn.loader.Loader;
+import com.dof.nn.loader.MetaData;
 import com.dof.nn.loader.image.ImageLoader;
 
 import java.io.File;
@@ -28,7 +30,12 @@ public class App {
         Loader testLoader = new ImageLoader(testImages, testLabels, 32);
 
         trainLoader.open();
-        testLoader.open();
+        MetaData metaData = testLoader.open();
+
+        for (int i = 0; i < metaData.getNumberBatches(); i++) {
+            BatchData batchData = trainLoader.readBatch();
+            System.out.println(batchData);
+        }
 
         trainLoader.close();
         testLoader.close();
