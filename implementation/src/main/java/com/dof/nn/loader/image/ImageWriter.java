@@ -1,5 +1,6 @@
 package com.dof.nn.loader.image;
 
+import com.dof.nn.core.NeuralNetwork;
 import com.dof.nn.loader.BatchData;
 
 import java.awt.image.BufferedImage;
@@ -66,7 +67,7 @@ public class ImageWriter {
 
         ImageMetaData metaData = loader.open();
 
-//        var neuralNetwork = NeuralNetwork.load("mnistNeural0.net");
+        var neuralNetwork = NeuralNetwork.load("mnistNeural0.net");
 
         int imageWidth = metaData.getWidth();
         int imageHeight = metaData.getHeight();
@@ -105,12 +106,12 @@ public class ImageWriter {
                 double[] singleImage = Arrays.copyOfRange(pixelData, n * imageSize, (n + 1) * imageSize);
                 double[] singleLabel = Arrays.copyOfRange(labelData, n * labelSize, (n + 1) * labelSize);
 
-//                double[] predictedLabel = neuralNetwork.predict(singleImage);
+                double[] predictedLabel = neuralNetwork.predict(singleImage);
 
-//                int predicted = convertOneHotToInt(predictedLabel, 0, labelSize);
+                int predicted = convertOneHotToInt(predictedLabel, 0, labelSize);
                 int actual = convertOneHotToInt(singleLabel, 0, labelSize);
 
-//                correct[n] = predicted == actual;
+                correct[n] = predicted == actual;
             }
 
             for (int pixelIndex = 0; pixelIndex < pixelData.length; pixelIndex++) {
@@ -133,7 +134,7 @@ public class ImageWriter {
                 if (correct[imageNumber]) {
                     pixelColor = color;
                 } else {
-                    pixelColor = (color << 16) + (color << 8) + color;
+                    pixelColor = (color << 16); //+ (color << 8) + color;
                 }
 
                 montage.setRGB(x, y, pixelColor);
