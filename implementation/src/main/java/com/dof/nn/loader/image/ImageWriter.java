@@ -133,7 +133,7 @@ public class ImageWriter {
                 if (correct[imageNumber]) {
                     pixelColor = color;
                 } else {
-                    pixelColor = (color << 16);
+                    pixelColor = (color << 16) + (color << 8) + color;
                 }
 
                 montage.setRGB(x, y, pixelColor);
